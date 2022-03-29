@@ -1,1 +1,170 @@
+//---------------------------------------------------------------------------
+
+#include <vcl.h>
+#pragma hdrstop
+#include "FingerPrintApp.h"
+#include "PortComDI.h"
+#include "SNImage.h"
+//---------------------------------------------------------------------------
+#pragma package(smart_init)
+#pragma link "comportp.lib"
+#pragma resource "*.dfm"
+TForm1 *Form1;
+ Rs232 *PortCom;
+ SNImage *objet;
+//---------------------------------------------------------------------------
+__fastcall TForm1::TForm1(TComponent* Owner)
+	: TForm(Owner)
+{
+}
+//---------------------------------------------------------------------------
+
+
+void __fastcall TForm1::btnOuvrirClick(TObject *Sender)
+{
+	PortCom = new Rs232("COM4");
+	  PortCom->configurer(CBR_9600,8,NOPARITY,ONESTOPBIT);
+
+
+  char trameOPEN[] = {0x55,0xaa,0x01,0x00,0x01,0x00,0x00,0x00,0x01,0x00,0x02,0x01};
+
+   for(int i=0; i<12; i++){
+
+		   PortCom->envoyer(trameOPEN[i]);
+				textResultat->Text = "PORT COM4 OPEN";
+
+  }
+
+		   for(int i=0; i<12; i++){
+
+				PortCom->recevoir(trameOPEN);
+
+		   }
+
+		PortCom->ouvrir();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TForm1::btnFermerClick(TObject *Sender)
+{
+	char trameCLOSE[] = {0x55,0xaa,0x01,0x00,0x00,0x00,0x00,0x00,0x02,0x00,0x02,0x01}; //Termination
+
+   for(int i=0; i<12; i++){
+
+		PortCom->envoyer(trameCLOSE[i]);
+
+  }
+
+          for(int i=0; i<12; i++){
+
+				PortCom->recevoir(trameCLOSE);
+
+		  }
+
+
+	PortCom->fermer();
+	textResultat->Text = "PORT COM4 FERMER";
+
+	delete PortCom;
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TForm1::btnEnvoyerClick(TObject *Sender)
+{
+		char trameLedOn[] = {0x55,0xaa,0x01,0x00,0x01,0x00,0x00,0x00,0x12,0x00,0x13,0x01};
+		char reponseLedOn[] = {0x55,0xaa,0x01,0x00,0x01,0x00,0x00,0x00,0x12,0x00,0x13,0x01};   //trame pour allumer la LED
+
+		 for(int i=0; i<12; i++){
+
+			PortCom->envoyer(trameLedOn[i]);
+
+			 textResultat->Text = "LED ALLUMER";
+
+		 }
+
+         	 for(int i=0; i<12; i++){
+
+			  PortCom->recevoir(reponseLedOn);
+
+		 }
+
+
+
+
+	   //	do {
+
+		 //	for(int i=0; i<12; i++){
+
+		  //		PortCom->recevoir(reponseLedOn);
+
+		  //	}
+		  // }while(reponseLedOn[8]!=0x30);
+
+
+}
+
+//---------------------------------------------------------------------------
+
+void __fastcall TForm1::Button3Click(TObject *Sender){
+
+	char trameLedOn[] = {0x55,0xaa,0x01,0x00,0x01,0x00,0x00,0x00,0x12,0x00,0x13,0x01};
+	char trameEnrollStart[] = {0x55,0xaa,0x01,0x00,0x01,0x00,0x00,0x00,0x22,0x00,0x23,0x01};  // débuter l'enregistrement
+
+    for(int i=0; i<12; i++){
+
+		PortCom->envoyer(trameLedOn[i]);
+			textResultat->Text = "TRAME ENVOYER";
+	}
+
+
+	textResultat->Text = "Placer l'empreinte à enregister sur le lecteur !";
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TForm1::btnPressFingerClick(TObject *Sender)
+{
+	char tramePressFinger[]= {0x55,0xaa,0x01,0x00,0x00,0x00,0x00,0x00,0x12,0x00,0x12,0x01}; // vérifie si un doigt est présent sur le lecteur
+	char reponsePressFinger[]= {0x55,0xaa,0x01,0x00,0x00,0x00,0x00,0x00,0x12,0x00,0x12,0x01};
+
+	for(int i=0; i<12; i++){
+
+		PortCom->envoyer(tramePressFinger[i]);
+			textResultat->Text = "TRAME ENVOYER";
+	}
+
+
+         	 for(int i=0; i<12; i++){
+
+			  PortCom->recevoir(reponsePressFinger);
+
+		 }
+
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TForm1::btnLedOffClick(TObject *Sender)
+{
+  char trameLedOff[] = {0x55,0xaa,0x01,0x00,0x00,0x00,0x00,0x00,0x12,0x00,0x12,0x01};    // trame led off (éteinte)
+
+		for(int i=0; i<12; i++){
+
+		PortCom->envoyer(trameLedOff[i]);
+			textResultat->Text = "LED ETEINTE";
+		}
+
+			  for(int i=0; i<12; i++){
+
+				PortCom->recevoir(trameLedOff);
+
+			}
+
+
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TForm1::Button5Click(TObject *Sender)
+{
+	objet->Charger("image01.bmp");
+}
+//---------------------------------------------------------------------------
 
